@@ -33,7 +33,12 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 				.authorizedGrantTypes("password", "refresh_token")
 				.scopes("write", "read")
 				.accessTokenValiditySeconds(6 * 60 * 60) // 6 Horas
-				.refreshTokenValiditySeconds(60 * 24 * 60 * 60) // 60 Dias
+				.refreshTokenValiditySeconds(60 * 24 * 60 * 60) // 60 Dias			
+			.and()
+				.withClient("user-register")
+				.secret(passwordEncoder.encode("register123"))
+				.authorizedGrantTypes("client_credentials")
+				.scopes("write", "read")
 			.and()
 				.withClient("checktoken")
 					.secret(passwordEncoder.encode("check123"));
