@@ -35,6 +35,12 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 				.accessTokenValiditySeconds(6 * 60 * 60) // 6 Horas
 				.refreshTokenValiditySeconds(60 * 24 * 60 * 60) // 60 Dias			
 			.and()
+				.withClient("userAnalytics")
+				.secret(passwordEncoder.encode("user123"))
+				.authorizedGrantTypes("authorization_code")
+				.scopes("read", "write")
+				.redirectUris("http://user-analytics.com")
+			.and()
 				.withClient("user-register")
 				.secret(passwordEncoder.encode("register123"))
 				.authorizedGrantTypes("client_credentials")
