@@ -1,0 +1,388 @@
+warning: LF will be replaced by CRLF in pom.xml.
+The file will have its original line endings in your working directory
+[1mdiff --git a/pom.xml b/pom.xml[m
+[1mindex 931a486..6f0e50c 100644[m
+[1m--- a/pom.xml[m
+[1m+++ b/pom.xml[m
+[36m@@ -69,6 +69,15 @@[m
+ 			<groupId>org.springframework.boot</groupId>[m
+ 			<artifactId>spring-boot-starter-validation</artifactId>[m
+ 		</dependency>[m
+[32m+[m		[32m<dependency>[m
+[32m+[m			[32m<groupId>org.springframework.boot</groupId>[m
+[32m+[m			[32m<artifactId>spring-boot-starter-data-jpa</artifactId>[m
+[32m+[m		[32m</dependency>[m
+[32m+[m		[32m<dependency>[m
+[32m+[m			[32m<groupId>org.postgresql</groupId>[m
+[32m+[m			[32m<artifactId>postgresql</artifactId>[m
+[32m+[m			[32m<scope>runtime</scope>[m
+[32m+[m		[32m</dependency>[m
+ 	</dependencies>[m
+ [m
+ 	<build>[m
+[1mdiff --git a/src/main/java/com/usuario/auth/AuthorizationServerConfig.java b/src/main/java/com/usuario/auth/AuthorizationServerConfig.java[m
+[1mdeleted file mode 100644[m
+[1mindex 8ba1f91..0000000[m
+[1m--- a/src/main/java/com/usuario/auth/AuthorizationServerConfig.java[m
+[1m+++ /dev/null[m
+[36m@@ -1,119 +0,0 @@[m
+[31m-package com.usuario.auth;[m
+[31m-[m
+[31m-import java.util.Arrays;[m
+[31m-[m
+[31m-import org.springframework.beans.factory.annotation.Autowired;[m
+[31m-import org.springframework.context.annotation.Bean;[m
+[31m-import org.springframework.context.annotation.Configuration;[m
+[31m-import org.springframework.core.io.ClassPathResource;[m
+[31m-import org.springframework.security.authentication.AuthenticationManager;[m
+[31m-import org.springframework.security.core.userdetails.UserDetailsService;[m
+[31m-import org.springframework.security.crypto.password.PasswordEncoder;[m
+[31m-import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;[m
+[31m-import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;[m
+[31m-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;[m
+[31m-import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;[m
+[31m-import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;[m
+[31m-import org.springframework.security.oauth2.provider.CompositeTokenGranter;[m
+[31m-import org.springframework.security.oauth2.provider.TokenGranter;[m
+[31m-import org.springframework.security.oauth2.provider.approval.ApprovalStore;[m
+[31m-import org.springframework.security.oauth2.provider.approval.TokenApprovalStore;[m
+[31m-import org.springframework.security.oauth2.provider.token.TokenStore;[m
+[31m-import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;[m
+[31m-import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory;[m
+[31m-[m
+[31m-@Configuration[m
+[31m-@EnableAuthorizationServer[m
+[31m-public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {[m
+[31m-[m
+[31m-	@Autowired[m
+[31m-	private PasswordEncoder passwordEncoder;[m
+[31m-	[m
+[31m-	@Autowired[m
+[31m-	private AuthenticationManager authenticationManager;[m
+[31m-[m
+[31m-	@Autowired[m
+[31m-	private UserDetailsService userDetailsService;[m
+[31m-	[m
+[31m-	@Autowired[m
+[31m-	private JwtKeyStoreProperties jwtKeyStoreProperties;[m
+[31m-			[m
+[31m-	@Override[m
+[31m-	public void configure(ClientDetailsServiceConfigurer clients) throws Exception {[m
+[31m-		clients[m
+[31m-			.inMemory()[m
+[31m-			.withClient("user")[m
+[31m-				.secret(passwordEncoder.encode("123"))[m
+[31m-				.authorizedGrantTypes("password", "refresh_token")[m
+[31m-				.scopes("write", "read")[m
+[31m-				.accessTokenValiditySeconds(6 * 60 * 60) // 6 Horas[m
+[31m-				.refreshTokenValiditySeconds(60 * 24 * 60 * 60) // 60 Dias			[m
+[31m-			.and()[m
+[31m-				.withClient("userAnalytics")[m
+[31m-				.secret(passwordEncoder.encode("user123"))[m
+[31m-				.authorizedGrantTypes("authorization_code")[m
+[31m-				.scopes("read", "write")[m
+[31m-				.redirectUris("http://user-analytics.com")[m
+[31m-			.and()[m
+[31m-				.withClient("user-register")[m
+[31m-				.secret(passwordEncoder.encode("register123"))[m
+[31m-				.authorizedGrantTypes("client_credentials")[m
+[31m-				.scopes("write", "read")[m
+[31m-			.and()[m
+[31m-				.withClient("checktoken")[m
+[31m-					.secret(passwordEncoder.encode("check123"));[m
+[31m-	}[m
+[31m-[m
+[31m-	@Override[m
+[31m-	public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {[m
+[31m-		security.checkTokenAccess("permitAll()")[m
+[31m-			.tokenKeyAccess("permitAll()")[m
+[31m-			.allowFormAuthenticationForClients();[m
+[31m-	}[m
+[31m-	[m
+[31m-	@Override[m
+[31m-	public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {[m
+[31m-		endpoints[m
+[31m-			.authenticationManager(authenticationManager)[m
+[31m-			.userDetailsService(userDetailsService)[m
+[31m-			.reuseRefreshTokens(false)[m
+[31m-			.accessTokenConverter(jwtAccessTokenConverter())[m
+[31m-			.approvalStore(approvalStore(endpoints.getTokenStore()))[m
+[31m-			.tokenGranter(tokenGranter(endpoints));[m
+[31m-	}[m
+[31m-	[m
+[31m-	private ApprovalStore approvalStore(TokenStore tokenStore) {[m
+[31m-		var approvalStore = new TokenApprovalStore();[m
+[31m-		approvalStore.setTokenStore(tokenStore);[m
+[31m-		[m
+[31m-		return approvalStore;[m
+[31m-	}[m
+[31m-	[m
+[31m-	@Bean[m
+[31m-	public JwtAccessTokenConverter jwtAccessTokenConverter() {[m
+[31m-		var jwtAccessTokenConverter = new JwtAccessTokenConverter();[m
+[31m-//		jwtAccessTokenConverter.setSigningKey("dsadjosajdoiasjdojptwhqpfqwuihdpwqodjwqpofhwquighbqwbgpowjdwqiopdjwqphuwqiopfgwfwqfwqgqwgwqd");[m
+[31m-[m
+[31m-		var jksResource = new ClassPathResource(jwtKeyStoreProperties.getPath());[m
+[31m-		var keyStorePass = jwtKeyStoreProperties.getPassword();[m
+[31m-		var keyPairAlias = jwtKeyStoreProperties.getKeypairAlias();[m
+[31m-		[m
+[31m-		var keyStoreKeyFactory = new KeyStoreKeyFactory(jksResource, keyStorePass.toCharArray());[m
+[31m-		var keyPair = keyStoreKeyFactory.getKeyPair(keyPairAlias);[m
+[31m-		[m
+[31m-		jwtAccessTokenConverter.setKeyPair(keyPair);[m
+[31m-		[m
+[31m-		return jwtAccessTokenConverter;[m
+[31m-	}[m
+[31m-	[m
+[31m-	private TokenGranter tokenGranter(AuthorizationServerEndpointsConfigurer endpoints) {[m
+[31m-		var pkceAuthorizationCodeTokenGranter = new PkceAuthorizationCodeTokenGranter(endpoints.getTokenServices(),[m
+[31m-				endpoints.getAuthorizationCodeServices(), endpoints.getClientDetailsService(),[m
+[31m-				endpoints.getOAuth2RequestFactory());[m
+[31m-		[m
+[31m-		var granters = Arrays.asList([m
+[31m-				pkceAuthorizationCodeTokenGranter, endpoints.getTokenGranter());[m
+[31m-		[m
+[31m-		return new CompositeTokenGranter(granters);[m
+[31m-	}[m
+[31m-}[m
+[1mdiff --git a/src/main/java/com/usuario/auth/CorsConfig.java b/src/main/java/com/usuario/auth/CorsConfig.java[m
+[1mdeleted file mode 100644[m
+[1mindex bde339f..0000000[m
+[1m--- a/src/main/java/com/usuario/auth/CorsConfig.java[m
+[1m+++ /dev/null[m
+[36m@@ -1,34 +0,0 @@[m
+[31m-package com.usuario.auth;[m
+[31m-import java.util.Collections;[m
+[31m-[m
+[31m-import org.springframework.boot.web.servlet.FilterRegistrationBean;[m
+[31m-import org.springframework.context.annotation.Bean;[m
+[31m-import org.springframework.context.annotation.Configuration;[m
+[31m-import org.springframework.core.Ordered;[m
+[31m-import org.springframework.web.cors.CorsConfiguration;[m
+[31m-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;[m
+[31m-import org.springframework.web.filter.CorsFilter;[m
+[31m-[m
+[31m-@Configuration[m
+[31m-public class CorsConfig {[m
+[31m-[m
+[31m-    // Fonte: https://spring.io/blog/2015/06/08/cors-support-in-spring-framework#filter-based-cors-support[m
+[31m-	@Bean[m
+[31m-	public FilterRegistrationBean<CorsFilter> corsFilter() {[m
+[31m-		CorsConfiguration config = new CorsConfiguration();[m
+[31m-		config.setAllowCredentials(true);[m
+[31m-		config.setAllowedOrigins(Collections.singletonList("*"));[m
+[31m-		config.setAllowedMethods(Collections.singletonList("*"));[m
+[31m-		config.setAllowedHeaders(Collections.singletonList("*"));[m
+[31m-[m
+[31m-		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();[m
+[31m-		source.registerCorsConfiguration("/oauth/token", config);[m
+[31m-[m
+[31m-		FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>();[m
+[31m-		bean.setFilter(new CorsFilter(source));[m
+[31m-		bean.setOrder(Ordered.HIGHEST_PRECEDENCE);[m
+[31m-[m
+[31m-		return bean;[m
+[31m-	}[m
+[31m-[m
+[31m-}[m
+\ No newline at end of file[m
+[1mdiff --git a/src/main/java/com/usuario/auth/JwtKeyStoreProperties.java b/src/main/java/com/usuario/auth/JwtKeyStoreProperties.java[m
+[1mdeleted file mode 100644[m
+[1mindex 8d935c4..0000000[m
+[1m--- a/src/main/java/com/usuario/auth/JwtKeyStoreProperties.java[m
+[1m+++ /dev/null[m
+[36m@@ -1,44 +0,0 @@[m
+[31m-package com.usuario.auth;[m
+[31m-[m
+[31m-import javax.validation.constraints.NotBlank;[m
+[31m-[m
+[31m-import org.springframework.boot.context.properties.ConfigurationProperties;[m
+[31m-import org.springframework.stereotype.Component;[m
+[31m-import org.springframework.validation.annotation.Validated;[m
+[31m-[m
+[31m-@Validated[m
+[31m-@Component[m
+[31m-@ConfigurationProperties("user.jwt.keystore")[m
+[31m-public class JwtKeyStoreProperties {[m
+[31m-[m
+[31m-	@NotBlank[m
+[31m-	private String path;[m
+[31m-	@NotBlank[m
+[31m-	private String password;[m
+[31m-	@NotBlank[m
+[31m-	private String keypairAlias;[m
+[31m-[m
+[31m-	public String getPath() {[m
+[31m-		return path;[m
+[31m-	}[m
+[31m-[m
+[31m-	public void setPath(String path) {[m
+[31m-		this.path = path;[m
+[31m-	}[m
+[31m-[m
+[31m-	public String getPassword() {[m
+[31m-		return password;[m
+[31m-	}[m
+[31m-[m
+[31m-	public void setPassword(String password) {[m
+[31m-		this.password = password;[m
+[31m-	}[m
+[31m-[m
+[31m-	public String getKeypairAlias() {[m
+[31m-		return keypairAlias;[m
+[31m-	}[m
+[31m-[m
+[31m-	public void setKeypairAlias(String keypairAlias) {[m
+[31m-		this.keypairAlias = keypairAlias;[m
+[31m-	}[m
+[31m-}[m
+[1mdiff --git a/src/main/java/com/usuario/auth/PkceAuthorizationCodeTokenGranter.java b/src/main/java/com/usuario/auth/PkceAuthorizationCodeTokenGranter.java[m
+[1mdeleted file mode 100644[m
+[1mindex 3f7d9eb..0000000[m
+[1m--- a/src/main/java/com/usuario/auth/PkceAuthorizationCodeTokenGranter.java[m
+[1m+++ /dev/null[m
+[36m@@ -1,76 +0,0 @@[m
+[31m-package com.usuario.auth;[m
+[31m-[m
+[31m-//Solução baseada em: https://github.com/spring-projects/spring-security-oauth/pull/675/files[m
+[31m-[m
+[31m-import java.security.MessageDigest;[m
+[31m-import java.security.NoSuchAlgorithmException;[m
+[31m-[m
+[31m-import org.apache.commons.codec.binary.Base64;[m
+[31m-import org.springframework.security.crypto.codec.Utf8;[m
+[31m-import org.springframework.security.oauth2.common.exceptions.InvalidGrantException;[m
+[31m-import org.springframework.security.oauth2.provider.ClientDetails;[m
+[31m-import org.springframework.security.oauth2.provider.ClientDetailsService;[m
+[31m-import org.springframework.security.oauth2.provider.OAuth2Authentication;[m
+[31m-import org.springframework.security.oauth2.provider.OAuth2Request;[m
+[31m-import org.springframework.security.oauth2.provider.OAuth2RequestFactory;[m
+[31m-import org.springframework.security.oauth2.provider.TokenRequest;[m
+[31m-import org.springframework.security.oauth2.provider.code.AuthorizationCodeServices;[m
+[31m-import org.springframework.security.oauth2.provider.code.AuthorizationCodeTokenGranter;[m
+[31m-import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;[m
+[31m-[m
+[31m-public class PkceAuthorizationCodeTokenGranter extends AuthorizationCodeTokenGranter {[m
+[31m-[m
+[31m-	public PkceAuthorizationCodeTokenGranter(AuthorizationServerTokenServices tokenServices,[m
+[31m-			AuthorizationCodeServices authorizationCodeServices, ClientDetailsService clientDetailsService,[m
+[31m-			OAuth2RequestFactory requestFactory) {[m
+[31m-		super(tokenServices, authorizationCodeServices, clientDetailsService, requestFactory);[m
+[31m-	}[m
+[31m-[m
+[31m-	@Override[m
+[31m-	protected OAuth2Authentication getOAuth2Authentication(ClientDetails client, TokenRequest tokenRequest) {[m
+[31m-		OAuth2Authentication authentication = super.getOAuth2Authentication(client, tokenRequest);[m
+[31m-		OAuth2Request request = authentication.getOAuth2Request();[m
+[31m-[m
+[31m-		String codeChallenge = request.getRequestParameters().get("code_challenge");[m
+[31m-		String codeChallengeMethod = request.getRequestParameters().get("code_challenge_method");[m
+[31m-		String codeVerifier = request.getRequestParameters().get("code_verifier");[m
+[31m-[m
+[31m-		if (codeChallenge != null || codeChallengeMethod != null) {[m
+[31m-			if (codeVerifier == null) {[m
+[31m-				throw new InvalidGrantException("Code verifier expected.");[m
+[31m-			}[m
+[31m-[m
+[31m-			if (!validateCodeVerifier(codeVerifier, codeChallenge, codeChallengeMethod)) {[m
+[31m-				throw new InvalidGrantException(codeVerifier + " does not match expected code verifier.");[m
+[31m-			}[m
+[31m-		}[m
+[31m-[m
+[31m-		return authentication;[m
+[31m-	}[m
+[31m-[m
+[31m-	private boolean validateCodeVerifier(String codeVerifier, String codeChallenge, String codeChallengeMethod) {[m
+[31m-[m
+[31m-		String generatedCodeChallenge = null;[m
+[31m-[m
+[31m-		if ("plain".equalsIgnoreCase(codeChallengeMethod)) {[m
+[31m-			generatedCodeChallenge = codeVerifier;[m
+[31m-		} else if ("s256".equalsIgnoreCase(codeChallengeMethod)) {[m
+[31m-			generatedCodeChallenge = generateHashSha256(codeVerifier);[m
+[31m-		} else {[m
+[31m-			throw new InvalidGrantException(codeChallengeMethod + " is not a valid challenge method.");[m
+[31m-		}[m
+[31m-[m
+[31m-		return generatedCodeChallenge.equals(codeChallenge);[m
+[31m-	}[m
+[31m-[m
+[31m-	private static String generateHashSha256(String plainText) {[m
+[31m-		try {[m
+[31m-			MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");[m
+[31m-			byte[] hash = messageDigest.digest(Utf8.encode(plainText));[m
+[31m-			return Base64.encodeBase64URLSafeString(hash);[m
+[31m-		} catch (NoSuchAlgorithmException e) {[m
+[31m-			throw new RuntimeException(e);[m
+[31m-		}[m
+[31m-	}[m
+[31m-[m
+[31m-}[m
+\ No newline at end of file[m
+[1mdiff --git a/src/main/java/com/usuario/auth/WebSecurityConfig.java b/src/main/java/com/usuario/auth/WebSecurityConfig.java[m
+[1mdeleted file mode 100644[m
+[1mindex ebda38b..0000000[m
+[1m--- a/src/main/java/com/usuario/auth/WebSecurityConfig.java[m
+[1m+++ /dev/null[m
+[36m@@ -1,45 +0,0 @@[m
+[31m-package com.usuario.auth;[m
+[31m-[m
+[31m-import org.springframework.context.annotation.Bean;[m
+[31m-import org.springframework.context.annotation.Configuration;[m
+[31m-import org.springframework.security.authentication.AuthenticationManager;[m
+[31m-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;[m
+[31m-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;[m
+[31m-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;[m
+[31m-import org.springframework.security.core.userdetails.UserDetailsService;[m
+[31m-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;[m
+[31m-import org.springframework.security.crypto.password.PasswordEncoder;[m
+[31m-[m
+[31m-@Configuration[m
+[31m-@EnableWebSecurity[m
+[31m-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {[m
+[31m-[m
+[31m-	@Override[m
+[31m-	protected void configure(AuthenticationManagerBuilder auth) throws Exception {[m
+[31m-		auth.inMemoryAuthentication()[m
+[31m-			.withUser("arthur")[m
+[31m-				.password(passwordEncoder().encode("123"))[m
+[31m-				.roles("ADMIN")[m
+[31m-			.and()[m
+[31m-			.withUser("joao")[m
+[31m-				.password(passwordEncoder().encode("123"))[m
+[31m-				.roles("ADMIN");[m
+[31m-	}[m
+[31m-	[m
+[31m-	@Bean[m
+[31m-	public PasswordEncoder passwordEncoder() {[m
+[31m-		return new BCryptPasswordEncoder();[m
+[31m-	}[m
+[31m-	[m
+[31m-	@Bean[m
+[31m-	@Override[m
+[31m-	protected AuthenticationManager authenticationManager() throws Exception {[m
+[31m-		return super.authenticationManager();[m
+[31m-	}[m
+[31m-[m
+[31m-	@Bean[m
+[31m-	@Override[m
+[31m-	protected UserDetailsService userDetailsService() {[m
+[31m-		return super.userDetailsService();[m
+[31m-	}[m
+[31m-}[m
+[1mdiff --git a/src/main/resources/application.properties b/src/main/resources/application.properties[m
+[1mindex 083b9a3..e595e40 100644[m
+[1m--- a/src/main/resources/application.properties[m
+[1m+++ b/src/main/resources/application.properties[m
+[36m@@ -2,4 +2,8 @@[m [mserver.port=8082[m
+ [m
+ user.jwt.keystore.path=keystores/user.jks[m
+ user.jwt.keystore.password=123456[m
+[31m-user.jwt.keystore.keypair-alias=user[m
+\ No newline at end of file[m
+[32m+[m[32muser.jwt.keystore.keypair-alias=user[m
+[32m+[m
+[32m+[m[32mspring.datasource.url=jdbc:postgresql://localhost:5432/usuarios[m
+[32m+[m[32mspring.datasource.username=postgres[m
+[32m+[m[32mspring.datasource.password=postgres[m
+\ No newline at end of file[m

@@ -1,4 +1,4 @@
-package com.usuario.auth;
+package com.usuario.auth.core;
 import java.util.Collections;
 
 import org.springframework.boot.web.servlet.FilterRegistrationBean;

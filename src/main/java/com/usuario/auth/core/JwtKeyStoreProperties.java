@@ -1,4 +1,4 @@
-package com.usuario.auth;
+package com.usuario.auth.core;
 
 import javax.validation.constraints.NotBlank;
 
