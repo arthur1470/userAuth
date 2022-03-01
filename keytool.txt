@@ -1,0 +1,7 @@
+keytool -genkeypair -alias user -keyalg RSA -keypass 123456 -keystore user.jks -storepass 123456
+
+keytool -list -keystore user.jks
+
+keytool -export -rfc -alias user -keystore user.jks -file user-cert.pem
+
+openssl x509 -pubkey -noout -in user-cert.pem > user-pkey.pem ou GET em http://localhost:8082/oauth/token_key
